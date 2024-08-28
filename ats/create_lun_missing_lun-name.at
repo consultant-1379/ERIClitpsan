@@ -1,0 +1,5 @@
+runLitpScript 2_node_cluster_setup.inc
+
+# missing username property
+assertErrorMessage "MissingRequiredPropertyError" create -t lun-disk -p /infrastructure/systems/system1/disks/lun1 -o name=sda size=10M storage_container=pool01 bootable=true
+

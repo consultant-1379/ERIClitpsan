@@ -1,0 +1,59 @@
+multipath.conf written by anaconda
+
+defaults {
+        user_friendly_names yes
+}
+blacklist {
+        devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*"
+        devnode "^hd[a-z]"
+        devnode "^dcssblk[0-9]*"
+        device {
+                vendor "DGC"
+                product "LUNZ"
+        }
+        device {
+                vendor "IBM"
+                product "S/390.*"
+        56e41cb278e511}
+        # don't count normal SATA devices as multipaths
+        device {
+                vendor  "ATA"
+        }
+        # don't count 3ware devices as multipaths
+        device {
+                vendor  "3ware"
+        }
+        device {
+                vendor  "AMCC"
+        }
+        # nor highpoint devices
+        device {
+                vendor  "HPT"
+        }
+        wwid "*"
+}
+blacklist_exceptions {
+        wwid "3600601604f213400d8adc704b278e511"
+        wwid "3600601604f21340090428e37b278e511"
+        wwid "3600601604f2134000a56e41cb278e511"
+}
+multipaths {
+        multipath {
+                uid 0
+                gid 0
+                wwid "3600601604f213400d8adc704b278e511"
+                mode 0600
+        }
+        multipath {
+                uid 0
+                gid 0
+                wwid "3600601604f21340090428e37b278e511"
+                mode 0600
+        }
+        multipath {
+                uid 0
+                gid 0
+                wwid "3600601604f2134000a56e41cb278e511"
+                mode 0600
+        }
+}

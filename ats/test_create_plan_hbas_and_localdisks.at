@@ -1,0 +1,29 @@
+runLitpScript 2_node_cluster_setup.inc
+
+# Manage the password required by LITP
+litpcrypt set san01 admin "password"
+
+# Create a SAN with a storage container + site id
+litp create -t san-emc -p /infrastructure/storage/storage_providers/san_01 -o name=san_01 san_type=vnx2 ip_a=10.10.10.123 ip_b=10.10.10.124 username=admin password_key=san01 login_scope=Global san_serial_number=12321 storage_site_id=FARGO01 storage_network=storage
+litp create -t storage-container -p /infrastructure/storage/storage_providers/san_01/storage_containers/pool1 -o type=POOL name=pool01
+
+# Create normal disks
+litp create -t disk -p /infrastructure/systems/system1/disks/boot_disk -o name=sda size=10M uuid=kgb
+litp create -t disk -p /infrastructure/systems/system2/disks/boot_disk -o name=sda size=10M uuid=kgb
+
+# Expect a DoNothingPlanError error, once it's not a ValidationError complaining about missing HBA's
+assertError --err_type DoNothingPlanError create_plan
+
+# Regression for "No HBAs defined for node .."
+litp create -t lun-disk -p /infrastructure/systems/system2/disks/lun1 -o lun_name=hd1 name=sda size=10M storage_container=pool01 bootable=true
+assertError --err_type ValidationError create_plan
+
+# Add the HBA to system2 and create_plan should throw no errors
+litp create -t hba -p /infrastructure/systems/system2/controllers/hba1 -o hba_porta_wwn=00:11:22:33:44:55:66:77 hba_portb_wwn=AA:BB:CC:DD:EE:FF:00:11 failover_mode=std
+litp create_plan
+
+assertCallbackTask create_sg_cb_task /infrastructure/systems/system2
+assertCallbackTask create_hostinit_cb_task /infrastructure/systems/system2
+assertCallbackTask create_lun_cb_task /infrastructure/systems/system2/disks/lun1
+assertCallbackTask create_reglun_cb_task /infrastructure/systems/system2/disks/lun1
+

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.ericsson.nms.litp</groupId>
+	<artifactId>ERIClitpsan</artifactId>
+	<version>1.38.2-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<parent>
+		<groupId>com.ericsson.litp</groupId>
+		<artifactId>integration</artifactId>
+		<version>1.112.2</version>
+	</parent>
+	<scm>
+		<developerConnection>${ericsson.scm.url}</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+	<modules>
+		<module>ERIClitpsan_CXP9030786</module>
+	</modules>
+	<!--
+	Sphinx build step commented out until real resolution found.
+	<build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.3</version>
+                <executions>
+                    <execution>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <executable>sphinx-build</executable>
+                            <workingDirectory>${basedir}/src/site/sphinx/</workingDirectory>
+                            <arguments>
+                                <argument>-b</argument>
+                                <argument>html</argument>
+                                <argument>./</argument>
+                                <argument>${project.build.outputDirectory}/sphinx/docs/</argument>
+                            </arguments>
+                        </configuration>
+                        <id>sphinx-generate-docs</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+     -->
+</project>

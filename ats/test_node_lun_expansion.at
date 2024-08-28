@@ -1,0 +1,66 @@
+runLitpScript 2_node_vcs_cluster_setup.inc
+
+# Create a second cluster ( type vcs ) ---------------------------------------------------------------------------
+litp create -t system -p /infrastructure/systems/system3 -o system_name='SYS3'
+
+litp create -t vcs-cluster -p /deployments/local/clusters/svc_cluster -o default_nic_monitor=mii cluster_type=vcs low_prio_net=services cluster_id=21978 llt_nets=heartbeat1,heartbeat2
+
+litp create -t node  -p /deployments/local/clusters/svc_cluster/nodes/node3        -o hostname='node3'
+litp inherit -p /deployments/local/clusters/svc_cluster/nodes/node3/system -s /infrastructure/systems/system3
+litp inherit -p /deployments/local/clusters/svc_cluster/nodes/node3/os -s /software/profiles/rhel
+litp create -t network-interface -p /deployments/local/clusters/svc_cluster/nodes/node3/network_interfaces/if0 -o network_name=nodes ipaddress=10.10.10.103
+litp inherit -p /deployments/local/clusters/svc_cluster/nodes/node3/storage_profile -s /infrastructure/storage/storage_profiles/profile_1
+
+
+# Manage the password required by LITP
+litpcrypt set san01 admin "password"
+
+# Create a SAN with a storage container + site id
+litp create -t san-emc -p /infrastructure/storage/storage_providers/san_01 -o name=san_01 san_type=vnx2 ip_a=10.10.10.123 ip_b=10.10.10.124 username=admin password_key=san01 login_scope=Global san_serial_number=12321 storage_site_id=FARGO01 storage_network=storage
+litp create -t storage-container -p /infrastructure/storage/storage_providers/san_01/storage_containers/pool1 -o type=POOL name=pool01
+
+# Create 5 LUN disks
+# litp create -t system -p /infrastructure/systems/system1 -o system_name=sample-system1
+litp create -t lun-disk -p /infrastructure/systems/system1/disks/lun1 -o lun_name=hd1 name=sda size=10M storage_container=pool01 bootable=true
+litp create -t lun-disk -p /infrastructure/systems/system1/disks/lun2 -o lun_name=hd2 name=sdb size=100M storage_container=pool01 bootable=false shared=false
+litp create -t lun-disk -p /infrastructure/systems/system1/disks/lun3 -o lun_name=hd3 name=sdc size=10G storage_container=pool01 shared=true
+litp create -t lun-disk -p /infrastructure/systems/system2/disks/lun4 -o lun_name=hd4 name=sda size=10G storage_container=pool01 shared=true
+litp create -t lun-disk -p /infrastructure/systems/system3/disks/lun5 -o lun_name=hd5 name=sda size=10G storage_container=pool01 shared=false snap_size=10
+
+
+# HBAs on system 1 in controllers colllection
+litp create -t hba -p /infrastructure/systems/system1/controllers/hba1 -o hba_porta_wwn=00:11:22:33:44:55:66:77 hba_portb_wwn=AA:BB:CC:DD:EE:FF:00:11 failover_mode=std
+litp create -t hba -p /infrastructure/systems/system1/controllers/hba2 -o hba_porta_wwn=11:22:33:44:55:66:77:88 hba_portb_wwn=BB:CC:DD:EE:FF:00:11:22 failover_mode=std
+
+# HBAs on system 2 in controllers colllection
+litp create -t hba -p /infrastructure/systems/system2/controllers/hba1 -o hba_porta_wwn=00:11:22:33:44:55:66:33 hba_portb_wwn=AA:BB:CC:DD:EE:FF:00:55 failover_mode=std
+litp create -t hba -p /infrastructure/systems/system2/controllers/hba2 -o hba_porta_wwn=11:22:33:44:55:66:77:44 hba_portb_wwn=BB:CC:DD:EE:FF:00:11:66 failover_mode=std
+
+# HBAs on system 3 in controllers colllection
+litp create -t hba -p /infrastructure/systems/system3/controllers/hba1 -o hba_porta_wwn=00:11:22:33:44:55:66:88 hba_portb_wwn=AA:BB:CC:DD:EE:FF:00:77 failover_mode=std
+litp create -t hba -p /infrastructure/systems/system3/controllers/hba2 -o hba_porta_wwn=11:22:33:44:55:66:77:55 hba_portb_wwn=BB:CC:DD:EE:FF:00:11:88 failover_mode=std
+
+
+litp create_plan
+litp run_plan
+
+
+# expand from 10M to 15M
+litp update -p /infrastructure/systems/system1/disks/lun1 -o size='15M'
+litp update -p /infrastructure/systems/system1/disks/lun2 -o size='150M'
+litp update -p /infrastructure/systems/system3/disks/lun5 -o size='100G'
+litp update -p /infrastructure/systems/system3/disks/lun5 -o snap_size=15
+
+# litp create_plan
+# show show_plan
+#litp run_plan
+
+#assertCallbackTask callback_function /deployments/local/clusters/db_cluster/nodes/node1 \
+#     function_name=node_scan_scsi_device_dmp_task
+#assertCallbackTask callback_function /deployments/local/clusters/svc_cluster/nodes/node3 \
+#     function_name=node_scan_scsi_device_mpath_task     
+#assertNoCallbackTask callback_function /deployments/local/clusters/db_cluster/nodes/node2 \
+#     function_name=node_scan_scsi_device_dmp_task
+#assertNoCallbackTask callback_function /deployments/local/clusters/db_cluster/nodes/node2 \
+#     function_name=node_scan_scsi_device_mpath_task
+
